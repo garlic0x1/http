@@ -3,6 +3,7 @@
   (:use :cl)
   (:import-from :alexandria-2 :line-up-last)
   (:export :parse-url
+           :extract-url-host-and-port
            :url-scheme
            :url-host
            :url-port
