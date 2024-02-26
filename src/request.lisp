@@ -66,5 +66,6 @@
     (line-up-last
      (req-headers req)
      (find-if #'host-header-p)
+     (header-value)
      (str:split ":")
      (apply #'values))))

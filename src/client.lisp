@@ -2,7 +2,7 @@
   (:nicknames :http/c)
   (:use :cl)
   (:import-from :http/url :url-host :url-port :parse-url :extract-url-host-and-port)
-  (:import-from :http/request :make-req :render-req :req-host)
+  (:import-from :http/request :make-req :render-req :req-host :req-uri)
   (:import-from :http/response :parse-resp)
   (:import-from :http/header :make-header)
   (:shadow :get)
@@ -12,7 +12,7 @@
 (in-package :http/client)
 
 (defun send-req (req)
-  (multiple-value-bind (host port) (req-host req)
+  (multiple-value-bind (host port) (extract-url-host-and-port (req-uri req))
     (let* ((sock (usocket:socket-connect host port))
            (stream (usocket:socket-stream sock)))
       (unwind-protect
@@ -28,6 +28,7 @@
            (host-header (make-header :key "Host" :value host)))
       (send-req (make-req
                  :method :get
+                 :uri uri
                  :headers (cons host-header headers))))))
 
 (defun post (uri &key headers body)
@@ -36,5 +37,6 @@
          (host-header (make-header :key "Host" :value host)))
     (send-req (make-req
                :method :post
+               :uri uri
                :headers (cons host-header headers)
                :body body))))

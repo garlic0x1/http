@@ -49,7 +49,8 @@
     (crlf out)))
 
 (defun parse-first-line (in resp)
-  (destructuring-bind (protocol status-code status) (str:words (read-line in))
+  (destructuring-bind (protocol status-code status)
+      (str:words (read-line in) :limit 3)
     (setf (resp-protocol resp) protocol)
     (setf (resp-status-code resp) (parse-integer status-code))
     (setf (resp-status resp) status)))

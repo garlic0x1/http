@@ -49,7 +49,7 @@
                         (first)
                         (str:split ":"))))
     (values (first host-and-port)
-            (second host-and-port))))
+            (parse-integer (or (second host-and-port) "80")))))
 
 (defun extract-url-path (string)
   (line-up-last
@@ -79,6 +79,6 @@
      :scheme (extract-url-scheme string)
      :host host
      :port port
-     :path (extract-url-path string)
+     :path (or (extract-url-path string) "/")
      :query (extract-url-query string)
      :fragment (extract-url-fragment string))))
