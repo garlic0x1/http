@@ -1,5 +1,4 @@
 (defpackage :http/util
-  (:nicknames :http/u)
   (:use :cl)
   (:export :crlf))
 (in-package :http/util)

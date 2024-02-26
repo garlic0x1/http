@@ -1,8 +1,9 @@
 (defpackage :http/request
   (:nicknames :http/req)
   (:use :cl)
+  (:import-from :alexandria-2 :line-up-last)
   (:import-from :http/util :crlf)
-  (:import-from :http/header :parse-headers :render-header)
+  (:import-from :http/header :parse-headers :render-header :header-key :header-value)
   (:export :make-req
            :render-req
            :parse-req
@@ -10,7 +11,8 @@
            :req-uri
            :req-protocol
            :req-headers
-           :req-body))
+           :req-body
+           :req-host))
 (in-package :http/request)
 
 (defclass req ()
@@ -58,3 +60,11 @@
     (parse-first-line in req)
     (setf (req-headers req) (parse-headers in))
     (setf (req-body req) in)))
+
+(defun req-host (req)
+  (flet ((host-header-p (h) (string-equal "Host" (header-key h))))
+    (line-up-last
+     (req-headers req)
+     (find-if #'host-header-p)
+     (str:split ":")
+     (apply #'values))))
