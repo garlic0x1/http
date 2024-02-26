@@ -28,8 +28,9 @@
   (crlf out))
 
 (defun parse-header (in)
-  (let ((header (make-header :key nil :value nil)))
-    (when-let ((split (mapcar #'str:trim (str:split ": " (read-line in)))))
+  (let ((header (make-header :key nil :value nil))
+        (split (mapcar #'str:trim (str:split ": " (read-line in)))))
+    (when (= 2 (length split))
       (destructuring-bind (key value) split
         (setf (header-key header) key)
         (setf (header-value header) value)

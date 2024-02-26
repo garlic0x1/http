@@ -8,6 +8,7 @@
            :parse-resp
            :resp-method
            :resp-uri
+           :resp-status-code
            :resp-protocol
            :resp-headers
            :resp-body))
@@ -57,4 +58,5 @@
   (let ((resp (make-resp)))
     (parse-first-line in resp)
     (setf (resp-headers resp) (parse-headers in))
-    (setf (resp-body resp) in)))
+    (setf (resp-body resp) in)
+    resp))
