@@ -7,15 +7,9 @@
 (in-suite :http-test)
 
 (defun http-get (host port)
-  (let* ((sock (socket-connect host port))
-         (stream (socket-stream sock))
-         (req (make-req :headers (list (make-header :key "Host" :value host)))))
-    (unwind-protect
-         (progn
-           (render-req stream req)
-           (force-output stream)
-           (parse-resp stream))
-      (socket-close sock))))
+  (send-req (make-req :headers (list (make-header :key "Host" :value host)))
+            host
+            port))
 
 (test :client
   (let ((resp (http-get "example.com" 80)))

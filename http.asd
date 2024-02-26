@@ -7,4 +7,5 @@
                              (:file "header")
                              (:file "request")
                              (:file "response")
+                             (:file "client")
                              (:file "package")))))
