@@ -6,11 +6,10 @@
   :description "Tests for HTTP package")
 (in-suite :http-test)
 
-(defun http-get (host port)
-  (send-req (make-req :headers (list (make-header :key "Host" :value host)))
-            host
-            port))
-
-(test :client
-  (let ((resp (http-get "example.com" 80)))
-    (is (= 200 (resp-status-code resp)))))
+(defun setup-db ()
+  (mito:connect-toplevel
+   :sqlite3
+   :database-name "/tmp/http-test.sqlite3")
+  (mito:recreate-table 'message)
+  (mito:recreate-table 'request)
+  (mito:recreate-table 'response))
