@@ -57,7 +57,7 @@
             (let ((*capture* capture))
               (multiple-value-bind (method uri protocol) (read-first-line stream)
                 (setf (request-method req) method
-                      (request-uri req) uri
+                      (request-uri req) (puri:parse-uri uri)
                       (request-protocol req) protocol))
               (let ((headers (read-headers stream)))
                 (setf (message-headers req) headers
