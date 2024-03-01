@@ -1,6 +1,9 @@
 (defpackage :http/read
   (:use :cl :http/types :http/util)
-  (:import-from :alexandria :assoc-value))
+  (:import-from :alexandria :assoc-value)
+  (:export :read-request
+           :read-response
+           :extract-host-and-port))
 (in-package :http/read)
 
 (defvar *capture* nil
@@ -36,6 +39,20 @@
     (cond (length (read-length stream (parse-integer length)))
           (t ""))))
 
+(defun read-request (stream)
+  (let ((req (make-instance 'request)))
+    (setf (message-raw req)
+          (with-output-to-string (capture)
+            (let ((*capture* capture))
+              (multiple-value-bind (method uri protocol) (read-first-line stream)
+                (setf (request-method req) method
+                      (request-uri req) (puri:parse-uri uri)
+                      (request-protocol req) protocol))
+              (let ((headers (read-headers stream)))
+                (setf (message-headers req) headers
+                      (message-body req) (read-body stream headers))))))
+    req))
+
 (defun read-response (stream)
   (let ((resp (make-instance 'response)))
     (setf (message-raw resp)
@@ -50,16 +67,8 @@
                       (message-body resp) (read-body stream headers))))))
     resp))
 
-(defun read-request (stream)
-  (let ((req (make-instance 'request)))
-    (setf (message-raw req)
-          (with-output-to-string (capture)
-            (let ((*capture* capture))
-              (multiple-value-bind (method uri protocol) (read-first-line stream)
-                (setf (request-method req) method
-                      (request-uri req) (puri:parse-uri uri)
-                      (request-protocol req) protocol))
-              (let ((headers (read-headers stream)))
-                (setf (message-headers req) headers
-                      (message-body req) (read-body stream headers))))))
-    req))
+(defun extract-host-and-port (message)
+  (let* ((host (assoc-value (message-headers message) :host))
+         (split (str:split ":" host :limit 2)))
+    (values (first split)
+            (parse-integer (or (second split) "80")))))

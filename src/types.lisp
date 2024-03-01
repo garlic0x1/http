@@ -14,7 +14,7 @@
    (headers
     :col-type :jsonb
     :initarg :headers
-    :initform (make-hash-table)
+    :initform '()
     :accessor message-headers
     :inflate #'http/util:inflate-alist
     :deflate #'http/util:deflate-alist)
