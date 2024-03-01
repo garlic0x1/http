@@ -1,16 +1,25 @@
 (defpackage :http-test
-  (:use :cl :fiveam :usocket :http))
+  (:use :cl :alexandria :fiveam :usocket :http))
 (in-package :http-test)
 
 (def-suite :http-test
   :description "Tests for HTTP package")
 (in-suite :http-test)
 
-(defun http-get (host port)
-  (send-req (make-req :headers (list (make-header :key "Host" :value host)))
-            host
-            port))
+(defun setup-db ()
+  (mito:connect-toplevel
+   :sqlite3
+   :database-name "/tmp/http-test.sqlite3")
+  (mito:recreate-table 'message)
+  (mito:recreate-table 'request)
+  (mito:recreate-table 'response))
 
-(test :client
-  (let ((resp (http-get "example.com" 80)))
-    (is (= 200 (resp-status-code resp)))))
+(defun send-request (req)
+  (multiple-value-bind (host port) (extract-host-and-port req)
+    (let* ((conn (socket-connect host port))
+           (stream (socket-stream conn)))
+      (unwind-protect
+           (progn (write-request stream req)
+                  (force-output stream)
+                  (read-response stream))
+        (socket-close conn)))))

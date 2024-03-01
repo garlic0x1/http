@@ -12,3 +12,7 @@ use [dexador](https://github.com/fukamachi/dexador) for production purposes.
 ```result
 #<HTTP/RESPONSE::RESP {10029433D3}>
 ```
+
+# Classes
+
+This package exposes `req` `resp` `url` `header` classes.

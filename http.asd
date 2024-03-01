@@ -1,12 +1,11 @@
 (asdf:defsystem "http"
   :author "garlic0x1"
   :license "MIT"
-  :depends-on (:alexandria :str :usocket)
+  :description "HTTP utilities preserving raw TCP messages."
+  :depends-on (:alexandria :cl-annot :str :usocket :mito :yason :puri)
   :components ((:module "src"
                 :components ((:file "util")
-                             (:file "url")
-                             (:file "header")
-                             (:file "request")
-                             (:file "response")
-                             (:file "client")
+                             (:file "types")
+                             (:file "read")
+                             (:file "write")
                              (:file "package")))))
