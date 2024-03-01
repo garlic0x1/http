@@ -60,7 +60,7 @@
             (let ((*capture* capture))
               (multiple-value-bind (protocol code status) (read-first-line stream)
                 (setf (response-protocol resp) protocol
-                      (response-status-code resp) code
+                      (response-status-code resp) (parse-integer code)
                       (response-status resp) status))
               (let ((headers (read-headers stream)))
                 (setf (message-headers resp) headers

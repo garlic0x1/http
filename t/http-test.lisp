@@ -23,3 +23,7 @@
                   (force-output stream)
                   (read-response stream))
         (socket-close conn)))))
+
+(test :client
+  (let ((req (make-instance 'request :headers '((:host . "example.com:80")))))
+    (is (= 200 (response-status-code (send-request req))))))
