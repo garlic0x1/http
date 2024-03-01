@@ -1,6 +1,7 @@
 (defpackage :http/util
   (:use :cl)
-  (:export :crlf
+  (:export :with-nil-to-string
+           :crlf
            :make-keyword
            :inflate-alist
            :deflate-alist
@@ -8,9 +9,17 @@
            :deflate-uri))
 (in-package :http/util)
 
-(defun crlf (stream)
-  (write-char #\return stream)
-  (write-char #\linefeed stream)
+(defmacro with-nil-to-string ((stream) &body body)
+  "Capture nil streams as strings, like #'format."
+  `(if ,stream
+       (progn ,@body)
+       (with-output-to-string (,stream) ,@body)))
+
+(defun crlf (stream &optional (count 1))
+  "Write CRLF to stream."
+  (dotimes (i count)
+    (write-char #\return stream)
+    (write-char #\linefeed stream))
   (values))
 
 (defun make-keyword (string)
