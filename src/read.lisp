@@ -66,9 +66,3 @@
                 (setf (message-headers resp) headers
                       (message-body resp) (read-body stream headers))))))
     resp))
-
-(defun extract-host-and-port (message)
-  (let* ((host (assoc-value (message-headers message) :host))
-         (split (str:split ":" host :limit 2)))
-    (values (first split)
-            (parse-integer (or (second split) "80")))))

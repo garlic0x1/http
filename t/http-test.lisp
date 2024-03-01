@@ -16,18 +16,6 @@
   (mito:recreate-table 'request)
   (mito:recreate-table 'response))
 
-(defun send-request (req)
-  (multiple-value-bind (host port) (extract-host-and-port req)
-    (let* ((conn (us:socket-connect host port))
-           (stream (us:socket-stream conn)))
-      (unwind-protect
-           (progn (write-request stream req)
-                  (force-output stream)
-                  (read-response stream))
-        (us:socket-close conn)))))
-
-(defvar *server* nil)
-
 (defun canary-response (stream)
   (format stream "HTTP/1.1 200 Canary")
   (crlf stream 2)
@@ -39,20 +27,10 @@
     (declare (ignore req))
     (canary-response stream)))
 
-(defun accept-connection (sock)
-  (let ((conn (us:socket-accept sock :element-type 'character)))
-    (bt:make-thread
-     (lambda ()
-       (unwind-protect (handle-connection conn)
-         (us:socket-close conn))))))
-
-(defun server-loop (host port)
-  (let ((sock (us:socket-listen host port :reuse-address t)))
-    (unwind-protect (loop (accept-connection sock))
-      (us:socket-close sock))))
-
-(defmacro with-server ((host port) &body body)
-  `(let ((thread (bt:make-thread (lambda () (server-loop ,host ,port)))))
+(defmacro with-server ((host port handler) &body body)
+  `(let ((thread (bt:make-thread
+                  (lambda ()
+                    (http/server::server-loop ,host ,port ,handler)))))
      (unwind-protect (progn (sleep 0.2) ,@body)
        (ignore-errors (bt:destroy-thread thread)))))
 
@@ -64,7 +42,7 @@
     (is (not (str:emptyp (message-body resp))))))
 
 (test :server
-  (with-server ("127.0.0.1" 8887)
+  (with-server ("127.0.0.1" 8887 'handle-connection)
     (let ((req (make-instance 'request :headers '((:host . "127.0.0.1:8887")))))
       (is (equal "Canary" (response-status (send-request req)))))))
 

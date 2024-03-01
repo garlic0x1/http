@@ -16,13 +16,13 @@
        (with-output-to-string (,stream) ,@body)))
 
 (defun crlf (stream &optional (count 1))
-  "Write CRLF to stream."
+  "Write CRLF(s) to stream."
   (dotimes (i count)
     (write-char #\return stream)
-    (write-char #\linefeed stream))
-  (values))
+    (write-char #\linefeed stream)))
 
 (defun make-keyword (string)
+  "Interns upcase keyword like the reader does."
   (intern (string-upcase string) :keyword))
 
 (defun inflate-alist (jsonb)
