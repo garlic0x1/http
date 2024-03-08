@@ -11,12 +11,14 @@
     (values (first split)
             (parse-integer (or (second split) "80")))))
 
-(defun send-request (req)
+(defun send-request (req &key raw)
   (multiple-value-bind (host port) (extract-host-and-port req)
     (let* ((conn (us:socket-connect host port))
            (stream (us:socket-stream conn)))
       (unwind-protect
-           (progn (http/write:write-request stream req)
+           (progn (if raw
+                      (write-string (message-raw req) stream)
+                      (http/write:write-request stream req))
                   (force-output stream)
                   (http/read:read-response stream))
         (us:socket-close conn)))))

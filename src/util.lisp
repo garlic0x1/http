@@ -1,6 +1,7 @@
 (defpackage :http/util
   (:use :cl)
-  (:export :with-nil-to-string
+  (:export :until
+           :with-nil-to-string
            :crlf
            :make-keyword
            :inflate-alist
@@ -8,6 +9,9 @@
            :inflate-uri
            :deflate-uri))
 (in-package :http/util)
+
+(defmacro until (pred &body body)
+  `(loop :while (not ,pred) :do (progn ,@body)))
 
 (defmacro with-nil-to-string ((stream) &body body)
   "Capture nil streams as strings, like #'format."
@@ -17,9 +21,10 @@
 
 (defun crlf (stream &optional (count 1))
   "Write CRLF(s) to stream."
-  (dotimes (i count)
-    (write-char #\return stream)
-    (write-char #\linefeed stream)))
+  (with-nil-to-string (stream)
+    (dotimes (i count)
+      (write-char #\return stream)
+      (write-char #\linefeed stream))))
 
 (defun make-keyword (string)
   "Interns upcase keyword like the reader does."

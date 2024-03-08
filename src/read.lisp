@@ -1,6 +1,6 @@
 (defpackage :http/read
   (:use :cl :http/types :http/util)
-  (:import-from :alexandria :assoc-value)
+  (:import-from :alexandria :assoc-value :when-let)
   (:export :read-request
            :read-response
            :extract-host-and-port))
@@ -28,7 +28,7 @@
 (defun read-length (stream length)
   (with-output-to-string (capture)
     (dotimes (i length)
-      (let ((c (read-char stream)))
+      (when-let ((c (ignore-errors (read-char stream))))
         (write-char c *capture*)
         (write-char c capture)))))
 
