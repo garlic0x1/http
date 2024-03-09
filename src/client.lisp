@@ -13,6 +13,7 @@
 
 (defun send-request (req &key raw)
   (multiple-value-bind (host port) (extract-host-and-port req)
+    (format t "host: ~a, port: ~a~%" host port)
     (let* ((conn (us:socket-connect host port))
            (stream (us:socket-stream conn)))
       (unwind-protect

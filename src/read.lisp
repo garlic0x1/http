@@ -28,7 +28,7 @@
 (defun read-length (stream length)
   (with-output-to-string (capture)
     (dotimes (i length)
-      (when-let ((c (ignore-errors (read-char stream))))
+      (when-let ((c (read-char stream)))
         (write-char c *capture*)
         (write-char c capture)))))
 
