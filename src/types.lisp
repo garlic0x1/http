@@ -61,3 +61,16 @@
     :initarg :status
     :initform "OK"
     :accessor response-status)))
+
+@export-class
+(mito:deftable message-pair ()
+  ((request
+    :col-type request
+    :initarg :request
+    :initform nil
+    :accessor message-pair-request)
+   (response
+    :col-type response
+    :initarg :response
+    :initform nil
+    :accessor message-pair-response)))

@@ -51,10 +51,11 @@
     (is (str:starts-with-p "GET / HTTP/1.1" (write-request nil req)))))
 
 (test :read
-  (let ((stream (make-string-input-stream
-                 (with-output-to-string (capture)
-                   (format capture "GET /bruh HTTP/1.1")
-                   (crlf capture 2)))))
+  (let ((stream
+          (make-string-input-stream
+           (with-output-to-string (capture)
+             (format capture "GET /bruh HTTP/1.1")
+             (crlf capture 2)))))
     (is (equal "/bruh"
                (puri:render-uri
                 (request-uri (read-request stream))
