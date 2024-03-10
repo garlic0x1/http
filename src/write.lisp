@@ -7,7 +7,8 @@
 (in-package :http/write)
 
 (defun write-raw-message (stream message)
-  (format stream "~a" (message-raw message)))
+  (loop :for byte :across (flexi-streams:string-to-octets (message-raw message))
+        :do (write-byte byte stream)))
 
 (defun write-headers (stream message)
   (dolist (h (message-headers message))

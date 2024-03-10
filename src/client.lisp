@@ -18,7 +18,7 @@
            (stream (us:socket-stream conn)))
       (unwind-protect
            (progn (if raw
-                      (write-string (message-raw req) stream)
+                      (http/write:write-raw-message stream req)
                       (http/write:write-request stream req))
                   (force-output stream)
                   (http/read:read-response stream))
