@@ -2,7 +2,15 @@
   :author "garlic0x1"
   :license "MIT"
   :description "HTTP utilities preserving raw TCP messages."
-  :depends-on (:alexandria :cl-annot :str :usocket :mito :yason :puri)
+  :depends-on (:alexandria
+               :cl-annot
+               :str
+               :usocket
+               :chunga
+               :flexi-streams
+               :mito
+               :yason
+               :puri)
   :components ((:module "src"
                 :components ((:file "util")
                              (:file "types")

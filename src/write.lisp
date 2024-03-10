@@ -19,23 +19,29 @@
     (format stream "~a" body)))
 
 (defun write-request (stream req)
-  (with-nil-to-string (stream)
-    (format stream "~a ~a ~a"
-            (request-method req)
-            (request-uri req)
-            (request-protocol req))
-    (crlf stream)
-    (write-headers stream req)
-    (crlf stream)
-    (write-body stream req)))
+  (let ((string
+          (with-output-to-string (capture)
+            (format capture "~a ~a ~a"
+                    (request-method req)
+                    (request-uri req)
+                    (request-protocol req))
+            (crlf capture)
+            (write-headers capture req)
+            (crlf capture)
+            (write-body capture req))))
+    (loop :for byte :across (flexi-streams:string-to-octets string)
+          :do (write-byte byte stream))))
 
 (defun write-response (stream resp)
-  (with-nil-to-string (stream)
-    (format stream "~a ~a ~a"
-            (response-protocol resp)
-            (response-status-code resp)
-            (response-status resp))
-    (crlf stream)
-    (write-headers stream resp)
-    (crlf stream)
-    (write-body stream resp)))
+  (let ((string
+          (with-output-to-string (capture)
+            (format capture "~a ~a ~a"
+                    (response-protocol resp)
+                    (response-status-code resp)
+                    (response-status resp))
+            (crlf capture)
+            (write-headers capture resp)
+            (crlf capture)
+            (write-body capture resp))))
+    (loop :for byte :across (flexi-streams:string-to-octets string)
+          :do (write-byte byte stream))))
