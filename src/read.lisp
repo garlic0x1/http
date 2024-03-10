@@ -9,6 +9,11 @@
 (defvar *capture* nil
   "Lexical capture stream for raw message.")
 
+(defmacro with-capture (&body body)
+  `(with-output-to-string (capture)
+     (let ((*capture* capture))
+       ,@body)))
+
 (defun read-status-line (stream)
   (let ((line (chunga:read-line* stream)))
     (write-line line *capture*)
@@ -42,27 +47,25 @@
 (defun read-request (stream)
   (let ((req (make-instance 'request)))
     (setf (message-raw req)
-          (with-output-to-string (capture)
-            (let ((*capture* capture))
-              (multiple-value-bind (method uri protocol) (read-status-line stream)
-                (setf (request-method req) method
-                      (request-uri req) (puri:parse-uri uri)
-                      (request-protocol req) protocol))
-              (let ((headers (read-headers stream)))
-                (setf (message-headers req) headers
-                      (message-body req) (read-body stream headers))))))
+          (with-capture
+            (multiple-value-bind (method uri protocol) (read-status-line stream)
+              (setf (request-method req) method
+                    (request-uri req) (puri:parse-uri uri)
+                    (request-protocol req) protocol))
+            (let ((headers (read-headers stream)))
+              (setf (message-headers req) headers
+                    (message-body req) (read-body stream headers)))))
     req))
 
 (defun read-response (stream)
   (let ((resp (make-instance 'response)))
     (setf (message-raw resp)
-          (with-output-to-string (capture)
-            (let ((*capture* capture))
-              (multiple-value-bind (protocol code status) (read-status-line stream)
-                (setf (response-protocol resp) protocol
-                      (response-status-code resp) (parse-integer code)
-                      (response-status resp) status))
-              (let ((headers (read-headers stream)))
-                (setf (message-headers resp) headers
-                      (message-body resp) (read-body stream headers))))))
+          (with-capture
+            (multiple-value-bind (protocol code status) (read-status-line stream)
+              (setf (response-protocol resp) protocol
+                    (response-status-code resp) (parse-integer code)
+                    (response-status resp) status))
+            (let ((headers (read-headers stream)))
+              (setf (message-headers resp) headers
+                    (message-body resp) (read-body stream headers)))))
     resp))
