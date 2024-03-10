@@ -14,6 +14,17 @@
     (write-line line *capture*)
     (apply #'values (mapcar #'str:trim (str:words line :limit 3)))))
 
+(defun read-headers (stream)
+  (flet ((split-header (line)
+           (let ((split (mapcar #'str:trim (str:split ":" line :limit 2))))
+             (cons (make-keyword (first split)) (second split)))))
+    (loop :with headers := '()
+          :for line := (chunga:read-line* stream)
+          :do (write-line line *capture*)
+          :while (not (str:emptyp (str:trim line)))
+          :do (push (split-header line) headers)
+          :finally (return headers))))
+
 (defun read-length (stream length)
   (with-output-to-string (capture)
     (dotimes (i length)
@@ -37,7 +48,7 @@
                 (setf (request-method req) method
                       (request-uri req) (puri:parse-uri uri)
                       (request-protocol req) protocol))
-              (let ((headers (chunga:read-http-headers stream)))
+              (let ((headers (read-headers stream)))
                 (setf (message-headers req) headers
                       (message-body req) (read-body stream headers))))))
     req))
@@ -51,7 +62,7 @@
                 (setf (response-protocol resp) protocol
                       (response-status-code resp) (parse-integer code)
                       (response-status resp) status))
-              (let ((headers (chunga:read-http-headers stream)))
+              (let ((headers (read-headers stream)))
                 (setf (message-headers resp) headers
                       (message-body resp) (read-body stream headers))))))
     resp))
