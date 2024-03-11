@@ -1,9 +1,7 @@
 (defpackage :http/read
   (:use :cl :http/types :http/util)
   (:import-from :alexandria :assoc-value :when-let)
-  (:export :read-request
-           :read-response
-           :extract-host-and-port))
+  (:export :read-request :read-response))
 (in-package :http/read)
 
 (defvar *capture* nil
@@ -37,11 +35,29 @@
         (write-char c *capture*)
         (write-char c capture)))))
 
+(defun read-chunked (stream)
+  (with-output-to-string (capture)
+    (loop :for line := (chunga:read-line* stream)
+          :for length := (parse-integer (str:trim line) :radix 16)
+          :do (progn
+                (write-line line capture)
+                (write-line line *capture*)
+                (dotimes (i (parse-integer (str:trim line) :radix 16))
+                  (let ((c (chunga:read-char* stream)))
+                    (write-char c capture)
+                    (write-char c *capture*)))
+                (let ((end-line (chunga:read-line* stream)))
+                  (write-line end-line capture)
+                  (write-line end-line *capture*)))
+          :while (not (= 0 length)))))
+
 (defun read-body (stream headers)
   (let ((length (assoc-value headers :content-length))
-        (type (assoc-value headers :content-type)))
-    (declare (ignore type))
-    (cond (length (read-length stream (parse-integer length)))
+        (t-encode (assoc-value headers :transfer-encoding)))
+    (cond (length
+           (read-length stream (parse-integer length)))
+          ((string-equal "chunked" t-encode)
+           (read-chunked stream ))
           (t ""))))
 
 (defun read-request (stream)
