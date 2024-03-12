@@ -1,12 +1,11 @@
 (defpackage :http/write
   (:use :cl :http/types :http/util)
   (:import-from :alexandria :when-let)
-  (:export :write-raw-message
-           :write-request
-           :write-response))
+  (:export :write-raw-message :write-request :write-response))
 (in-package :http/write)
 
 (defun write-raw-message (stream message)
+  "Write raw message string to a binary stream."
   (loop :for byte :across (flexi-streams:string-to-octets (message-raw message))
         :do (write-byte byte stream)))
 
@@ -19,7 +18,8 @@
   (when-let ((body (message-body message)))
     (format stream "~a" body)))
 
-(defun write-request (stream req)
+(defun write-request (stream req &key to-string)
+  "Write HTTP request to a binary stream or return a string."
   (let ((string
           (with-output-to-string (capture)
             (format capture "~a ~a ~a"
@@ -30,10 +30,13 @@
             (write-headers capture req)
             (crlf capture)
             (write-body capture req))))
-    (loop :for byte :across (flexi-streams:string-to-octets string)
-          :do (write-byte byte stream))))
+    (if to-string
+        string
+        (loop :for byte :across (flexi-streams:string-to-octets string)
+              :do (write-byte byte stream)))))
 
-(defun write-response (stream resp)
+(defun write-response (stream resp &key to-string)
+  "Write HTTP response to a binary stream or return a string."
   (let ((string
           (with-output-to-string (capture)
             (format capture "~a ~a ~a"
@@ -44,5 +47,7 @@
             (write-headers capture resp)
             (crlf capture)
             (write-body capture resp))))
-    (loop :for byte :across (flexi-streams:string-to-octets string)
-          :do (write-byte byte stream))))
+    (if to-string
+        string
+        (loop :for byte :across (flexi-streams:string-to-octets string)
+              :do (write-byte byte stream)))))

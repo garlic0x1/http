@@ -3,6 +3,8 @@
   (:export :until
            :with-nil-to-string
            :crlf
+           :write-char*
+           :write-line*
            :make-keyword
            :inflate-alist
            :deflate-alist
@@ -25,6 +27,22 @@
     (dotimes (i count)
       (write-char #\return stream)
       (write-char #\linefeed stream))))
+
+(defun write-char* (char &rest streams)
+  "Write character to one or more streams."
+  (dolist (stream streams)
+    (write-char char stream)))
+
+(defun write-line* (string &rest streams)
+  "Write line to one or more streams."
+  (dolist (stream streams)
+    (write-line string stream)))
+
+(defun write-line-cr (string &rest streams)
+  "Write CRLF line to one or more streams."
+  (dolist (stream streams)
+    (write-string string stream)
+    (crlf stream)))
 
 (defun make-keyword (string)
   "Interns upcase keyword like the reader does."

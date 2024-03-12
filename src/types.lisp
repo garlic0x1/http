@@ -19,7 +19,7 @@
     :inflate #'http/util:inflate-alist
     :deflate #'http/util:deflate-alist)
    (body
-    :col-type :text ;(or :null :text)
+    :col-type (or :null :text)
     :initarg :body
     :initform nil
     :accessor message-body)))

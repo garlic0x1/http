@@ -8,16 +8,19 @@
   "Lexical capture stream for raw message.")
 
 (defmacro with-capture (&body body)
+  "Capture `*capture*` dynamic variable to string."
   `(with-output-to-string (capture)
      (let ((*capture* capture))
        ,@body)))
 
 (defun read-status-line (stream)
+  "Get multiple values of status line elements."
   (let ((line (chunga:read-line* stream)))
     (write-line line *capture*)
     (apply #'values (mapcar #'str:trim (str:words line :limit 3)))))
 
 (defun read-headers (stream)
+  "Read headers into an alist of keywords to strings."
   (flet ((split-header (line)
            (let ((split (mapcar #'str:trim (str:split ":" line :limit 2))))
              (cons (make-keyword (first split)) (second split)))))
@@ -29,29 +32,23 @@
           :finally (return headers))))
 
 (defun read-length (stream length)
+  "Read HTTP bodies with `Content-Length` header."
   (with-output-to-string (capture)
     (dotimes (i length)
-      (when-let ((c (chunga:read-char* stream)))
-        (write-char c *capture*)
-        (write-char c capture)))))
+      (write-char* (chunga:read-char* stream) capture *capture*))))
 
 (defun read-chunked (stream)
+  "Read HTTP bodies with `Content-Encoding: chunked` header."
   (with-output-to-string (capture)
     (loop :for line := (chunga:read-line* stream)
           :for length := (parse-integer (str:trim line) :radix 16)
-          :do (progn
-                (write-line line capture)
-                (write-line line *capture*)
-                (dotimes (i (parse-integer (str:trim line) :radix 16))
-                  (let ((c (chunga:read-char* stream)))
-                    (write-char c capture)
-                    (write-char c *capture*)))
-                (let ((end-line (chunga:read-line* stream)))
-                  (write-line end-line capture)
-                  (write-line end-line *capture*)))
+          :do (write-line* line capture *capture*)
+          :do (dotimes (i length) (write-char* (chunga:read-char* stream) capture *capture*))
+          :do (write-line* (chunga:read-line* stream) capture *capture*)
           :while (not (= 0 length)))))
 
 (defun read-body (stream headers)
+  "Read HTTP body, checks headers to determine style."
   (let ((length (assoc-value headers :content-length))
         (t-encode (assoc-value headers :transfer-encoding)))
     (cond (length
@@ -61,6 +58,7 @@
           (t ""))))
 
 (defun read-request (stream)
+  "Read HTTP request from binary stream."
   (let ((req (make-instance 'request)))
     (setf (message-raw req)
           (with-capture
@@ -74,6 +72,7 @@
     req))
 
 (defun read-response (stream)
+  "Read HTTP response from binary stream."
   (let ((resp (make-instance 'response)))
     (setf (message-raw resp)
           (with-capture
