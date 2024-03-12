@@ -16,7 +16,7 @@
 (defun read-status-line (stream)
   "Get multiple values of status line elements."
   (let ((line (chunga:read-line* stream)))
-    (write-line line *capture*)
+    (write-line-cr line *capture*)
     (apply #'values (mapcar #'str:trim (str:words line :limit 3)))))
 
 (defun read-headers (stream)
@@ -26,7 +26,7 @@
              (cons (make-keyword (first split)) (second split)))))
     (loop :with headers := '()
           :for line := (chunga:read-line* stream)
-          :do (write-line line *capture*)
+          :do (write-line-cr line *capture*)
           :while (not (str:emptyp (str:trim line)))
           :do (push (split-header line) headers)
           :finally (return headers))))

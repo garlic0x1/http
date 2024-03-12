@@ -5,6 +5,7 @@
            :crlf
            :write-char*
            :write-line*
+           :write-line-cr
            :make-keyword
            :inflate-alist
            :deflate-alist
