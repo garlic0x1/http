@@ -7,7 +7,9 @@
 (defun write-raw-message (stream message)
   "Write raw message string to a binary stream."
   (loop :for byte :across (flexi-streams:string-to-octets (message-raw message))
-        :do (write-byte byte stream)))
+        :do (write-byte byte stream)
+        :finally (force-output stream)
+        :finally (return message)))
 
 (defun write-headers (stream message)
   (dolist (h (message-headers message))
@@ -33,7 +35,9 @@
     (if to-string
         string
         (loop :for byte :across (flexi-streams:string-to-octets string)
-              :do (write-byte byte stream)))))
+              :do (write-byte byte stream)
+              :finally (force-output stream)
+              :finally (return req)))))
 
 (defun write-response (stream resp &key to-string)
   "Write HTTP response to a binary stream or return a string."
@@ -50,4 +54,6 @@
     (if to-string
         string
         (loop :for byte :across (flexi-streams:string-to-octets string)
-              :do (write-byte byte stream)))))
+              :do (write-byte byte stream)
+              :finally (force-output stream)
+              :finally (return resp)))))

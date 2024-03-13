@@ -2,11 +2,12 @@
   (:use :cl :http/types :http/util)
   (:local-nicknames (:us :usocket))
   (:import-from :alexandria :assoc-value)
-  (:export :send-request))
+  (:export :send-request :extract-host-and-port))
 (in-package :http/client)
 
-(defun extract-host-and-port (message)
-  (let* ((host (assoc-value (message-headers message) :host))
+(defun extract-host-and-port (message &key host)
+  "If host is specified, extract from that."
+  (let* ((host (or host (assoc-value (message-headers message) :host)))
          (split (str:split ":" host :limit 2)))
     (values (first split)
             (parse-integer (or (second split) "80")))))

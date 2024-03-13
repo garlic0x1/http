@@ -16,7 +16,7 @@
          (us:socket-close conn))))))
 
 (defun server-loop (host port handler)
-  (let ((sock (us:socket-listen host port)))
+  (let ((sock (us:socket-listen host port :element-type '(unsigned-byte 8))))
     (unwind-protect (until *halt* (accept-connection sock handler))
       (us:socket-close sock))))
 
@@ -25,8 +25,9 @@
   (setf *halt* t)
   (when force (bt:destroy-thread *server*)))
 
-(defun start-server
-    (&key (host "127.0.0.1") (port 5000) (handler (error "Must provide handler.")))
+(defun start-server (&key (host "127.0.0.1")
+                          (port 5000)
+                          (handler (error "Must provide handler.")))
   (setf *halt* nil)
   (setf *server* (bt:make-thread
                   (lambda ()
