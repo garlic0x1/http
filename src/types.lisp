@@ -42,7 +42,12 @@
     :col-type (:varchar 32)
     :initarg :protocol
     :initform "HTTP/1.1"
-    :accessor request-protocol)))
+    :accessor request-protocol)
+   (host
+    :col-type (or :null (:varchar 1024))
+    :initarg :host
+    :initform nil
+    :accessor request-host)))
 
 @export-class
 (mito:deftable response (message)

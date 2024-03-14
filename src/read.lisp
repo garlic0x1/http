@@ -57,10 +57,11 @@
            (read-chunked stream ))
           (t ""))))
 
-(defun read-request (stream)
+(defun read-request (stream &key host)
   "Read HTTP request from binary stream."
   (let ((req (make-instance 'request)))
-    (setf (message-raw req)
+    (setf (request-host req) host
+          (message-raw req)
           (with-capture
             (multiple-value-bind (method uri protocol) (read-status-line stream)
               (setf (request-method req) method
