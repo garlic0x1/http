@@ -52,9 +52,11 @@
   (let ((length (assoc-value headers :content-length))
         (t-encode (assoc-value headers :transfer-encoding)))
     (cond (length
-           (read-length stream (parse-integer length)))
+           (http/encoding:decompress-string
+            (read-length stream (parse-integer length))
+            headers))
           ((string-equal "chunked" t-encode)
-           (read-chunked stream ))
+           (read-chunked stream))
           (t ""))))
 
 (defun read-request (stream &key host)

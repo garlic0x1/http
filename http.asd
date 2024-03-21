@@ -8,12 +8,14 @@
                :usocket
                :chunga
                :flexi-streams
+               :chipz
                :mito
                :yason
                :puri)
   :components ((:module "src"
                 :components ((:file "util")
                              (:file "types")
+                             (:file "encoding")
                              (:file "read")
                              (:file "write")
                              (:file "server")
