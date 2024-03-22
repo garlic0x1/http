@@ -1,5 +1,5 @@
 (defpackage :http/read
-  (:use :cl :http/types :http/util)
+  (:use :cl :http/types :http/util :http/encoding)
   (:import-from :alexandria :assoc-value :when-let)
   (:export :read-request :read-response))
 (in-package :http/read)
@@ -37,13 +37,15 @@
     (dotimes (i length)
       (write-char* (chunga:read-char* stream) capture *capture*))))
 
-(defun read-chunked (stream)
+(defun read-chunked (stream headers)
   "Read HTTP bodies with `Content-Encoding: chunked` header."
   (with-output-to-string (capture)
     (loop :for line := (chunga:read-line* stream)
           :for length := (parse-integer (str:trim line) :radix 16)
           :do (write-line* line capture *capture*)
-          :do (dotimes (i length) (write-char* (chunga:read-char* stream) capture *capture*))
+          :do (let ((chunk (read-length stream length)))
+                (ignore-errors
+                  (write-string (decompress-string chunk headers) capture)))
           :do (write-line* (chunga:read-line* stream) capture *capture*)
           :while (not (= 0 length)))))
 
@@ -52,11 +54,9 @@
   (let ((length (assoc-value headers :content-length))
         (t-encode (assoc-value headers :transfer-encoding)))
     (cond (length
-           (http/encoding:decompress-string
-            (read-length stream (parse-integer length))
-            headers))
+           (decompress-string (read-length stream (parse-integer length)) headers))
           ((string-equal "chunked" t-encode)
-           (read-chunked stream))
+           (read-chunked stream headers))
           (t ""))))
 
 (defun read-request (stream &key host)
