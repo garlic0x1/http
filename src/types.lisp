@@ -69,7 +69,14 @@
 
 @export-class
 (mito:deftable message-pair ()
-  ((request
+  ((metadata
+    :col-type (or :null :jsonb)
+    :initarg :metadata
+    :initform nil
+    :accessor message-pair-metadata
+    :inflate #'http/util:inflate-alist
+    :deflate #'http/util:deflate-alist)
+   (request
     :col-type request
     :initarg :request
     :initform nil
