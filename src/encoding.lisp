@@ -5,7 +5,6 @@
 (in-package :http/encoding)
 
 (defun read-encoding (string)
-  (print string)
   (cond ((string= "gzip" string) 'chipz:gzip)
         ((string= "deflate" string) 'chipz:deflate)))
 
